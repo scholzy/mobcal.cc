@@ -177,12 +177,6 @@ void setup_bst(Molecule* molecule, double* wgst, double* pgst, double* b2max, do
 			trj = trajectory(molecule, v, b);
 		} while (1.0 - std::cos(trj.ang) > CMIN);
 	}
-
-	for (int i = 0; i < INP; ++i) {
-		std::cout << pgst[i] << "\t"
-			  << b2max[i] << "\t"
-			  << RO * std::sqrt(b2max[i]) << std::endl;
-	}
 }
 
 void calculate(Molecule* molecule, double* wgst, double* pgst, double* b2max, double* cosx, std::mt19937_64 rng)
