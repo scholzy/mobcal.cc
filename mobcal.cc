@@ -10,8 +10,6 @@
 #include "potential.hpp"
 #include "trajectory.hpp"
 
-#define DEBUG 0
-
 Molecule get_input(std::string file)
 {
 	std::fstream input_file(file.c_str());
@@ -26,10 +24,6 @@ Molecule get_input(std::string file)
 			   y,
 			   z };
 		molecule.push_back(a);
-	}
-
-	for (auto atom: molecule) {
-		std::cout << atom.m << " " << atom.x << " " << atom.y << " " << atom.z << " " << atom.q << std::endl;
 	}
 
 	return molecule;
@@ -130,16 +124,6 @@ void setup_gst(Molecule* molecule, double* wgst, double* pgst)
 		hold2 = 0.5 * mu(molecule) * std::pow(hold1, 2) / (XK * T);
 		hold3 = std::exp(-1.0 * std::pow(pgst[i], 2) / TST) *
 			std::pow(pgst[i], 5);
-		
-		/* Print out the setup */
-		if (DEBUG) {
-			std::cout << pgst[i] << "\t"
-				  << wgst[i] << "\t"
-				  << hold1 << "\t"
-				  << hold2 << "\t"
-				  << hold3 << "\t"
-				  << (sum / std::pow(TST, 3)) << std::endl;
-		}
 	}
 }
 
@@ -243,7 +227,6 @@ void calculate(Molecule* molecule, double* wgst, double* pgst, double* b2max, do
 			om22st[i] += temp2 * pgst[j] * pgst[j] * wgst[j] / (1.0 / (3.0 * TST));
 			q1st[j] += temp1;
 			q2st[j] += temp2;
-			// std::cout << om11st[i] * M_PI * RO * RO * 1e20 << std::endl;
 		}
 
 		printf("Cycle %2d: %f\n", i, om11st[i] * M_PI * RO * RO * 1e20);
