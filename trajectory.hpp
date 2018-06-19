@@ -6,8 +6,8 @@
 #include "potential.hpp"
 
 typedef struct Trajout {
-	double ang;
-	double erat;
+    double ang;
+    double erat;
 } Trajout;
 
 void derivative(Molecule* molecule, double* w, double* dw);

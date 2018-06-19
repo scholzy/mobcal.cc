@@ -8,17 +8,17 @@
 #include "constants.hpp"
 
 typedef struct Point {
-	double x;
-	double y;
-	double z;
+    double x;
+    double y;
+    double z;
 } Point;
 
 typedef struct Atom {
-	int m;
- 	double q;
-	double x;
-	double y;
-	double z;
+    int m;
+    double q;
+    double x;
+    double y;
+    double z;
 } Atom;
 
 typedef std::vector<Atom> Molecule;
