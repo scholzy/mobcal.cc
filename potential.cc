@@ -1,7 +1,9 @@
+#include <string>
+
 #include "potential.hpp"
 #include "constants.hpp"
 
-Potential potential(Molecule* molecule, Point point)
+Potential potential(Molecule* molecule, Point point, std::string gas)
 {
     double lj_pot = 0.0;
     Point lj_der = { 0.0, 0.0, 0.0 }, ion_dip = { 0.0, 0.0, 0.0 };
