@@ -172,6 +172,8 @@ Trajout trajectory(Molecule* molecule, double v, double b)
     double time = 0.0;
     double array[6][40];
 
+    double ROMAX = romax(molecule);
+
     do {
         do {
             diffeq(molecule, w, dw, &dt, &l, q, &hvar, &hcvar, &time, array);
@@ -191,7 +193,7 @@ Trajout trajectory(Molecule* molecule, double v, double b)
             w[4] };
         p = potential(molecule, point);
 
-        if (p.dmax < romax(molecule)) {
+        if (p.dmax < ROMAX) {
             continue;
         }
 
