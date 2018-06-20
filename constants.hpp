@@ -3,14 +3,20 @@
 
 #include <cmath>
 
-#define HELIUM 1
-#define NITROGEN 0
+#define HELIUM 0
+#define NITROGEN 1
 
 static const double XE = 1.60217733e-19;
 static const double XN = 6.0221367e23;
 static const double XK = 1.380658e-23;
 static const double XEO = 8.854187817e-12;
+
+#if HELIUM
 static const double DIPOL = 0.204956e-30 / (2.0 * 4.0 * M_PI * XEO) * XE * XE;
+#elif NITROGEN
+static const double DIPOL = 1.641e-30/(2.0*4.0 * M_PI * XEO) * XE * XE;
+#endif
+
 static const double T = 298.0;
 static const double EO = 1.34e-3 * XE;
 static const double RO = 3.043e-10;

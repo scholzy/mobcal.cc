@@ -32,7 +32,7 @@ Molecule get_input(std::string file)
 Point get_extents(Molecule* molecule, double dmax)
 {
     int irn = 1000;
-    double ddd = (romax(molecule)+ dmax) / (double)irn;
+    double ddd = (romax(molecule) + dmax) / (double)irn;
     Point e_max = { 0.0, 0.0, 0.0 };
     Point r_max = { 0.0, 0.0, 0.0 };
     Point r00_max = { 0.0, 0.0, 0.0 };

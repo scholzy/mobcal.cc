@@ -24,7 +24,7 @@ depend: .depend
 	$(CXX) $(CXXFLAGS) -MM $^>>./.depend;
 
 test: $(appname)
-	@-./$(appname)
+	@-./$(appname) tests/n2o.inp
 
 clean:
 	-rm -f $(objects)

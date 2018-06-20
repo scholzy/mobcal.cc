@@ -205,7 +205,7 @@ double lj_radius(Atom atom)
         break;
     }
 
-#elif BUFFER == NITROGEN
+#elif NITROGEN
     switch (atom.m) {
     case 1:
         radius = std::sqrt(rogas * 1.2409) * convr * 1.0e-10;
@@ -259,9 +259,7 @@ double romax(Molecule* molecule)
     }
     
 #if NITROGEN
-    if (gas == "N2") {
-        ro += (1.1055e-10 / 2.0);
-    }
+    ro += (1.1055e-10 / 2.0);
 #endif
 
     return ro;
