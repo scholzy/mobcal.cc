@@ -32,14 +32,14 @@ Molecule get_input(std::string file)
 Point get_extents(Molecule* molecule, double dmax)
 {
     int irn = 1000;
-    double ddd = (ROMAX + dmax) / (double)irn;
+    double ddd = (romax(molecule)+ dmax) / (double)irn;
     Point e_max = { 0.0, 0.0, 0.0 };
     Point r_max = { 0.0, 0.0, 0.0 };
     Point r00_max = { 0.0, 0.0, 0.0 };
     Point coord = { 0.0, 0.0, 0.0 };
 
     for (int i = 0; i < irn; ++i) {
-        coord.x = ROMAX + dmax - ((double)i + 1.0) * ddd;
+        coord.x = romax(molecule) + dmax - ((double)i + 1.0) * ddd;
         Potential p = potential(molecule, coord);
         if (p.potential > 0.0) {
             break;
@@ -53,7 +53,7 @@ Point get_extents(Molecule* molecule, double dmax)
     coord.x = 0.0;
 
     for (int i = 0; i < irn; ++i) {
-        coord.y = ROMAX + dmax - ((double)i + 1.0) * ddd;
+        coord.y = romax(molecule) + dmax - ((double)i + 1.0) * ddd;
         Potential p = potential(molecule, coord);
         if (p.potential > 0.0) {
             break;
@@ -67,7 +67,7 @@ Point get_extents(Molecule* molecule, double dmax)
     coord.y = 0.0;
 
     for (int i = 0; i < irn; ++i) {
-        coord.z = ROMAX + dmax - ((double)i + 1.0) * ddd;
+        coord.z = romax(molecule) + dmax - ((double)i + 1.0) * ddd;
         Potential p = potential(molecule, coord);
         if (p.potential > 0.0) {
             break;

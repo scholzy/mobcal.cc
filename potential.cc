@@ -76,7 +76,7 @@ Potential potential(Molecule* molecule, Point point)
     double dipolzz = (1.710e-30 / (2.0 * 4.0 * M_PI * XEO)) * XE * XE;
     double pot_min = 1.0e8;
 
-    dmax = 2.0 * ROMAX; // TODO: fix this
+    dmax = 2.0 * romax(molecule);
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 2; ++j) {
             // Clear out working arrays.

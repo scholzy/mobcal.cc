@@ -37,4 +37,6 @@ double mu(Molecule* molecule);
 
 Molecule rantate(Molecule* molecule, double* rands);
 
+double romax(Molecule* molecule);
+
 #endif

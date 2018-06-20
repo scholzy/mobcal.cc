@@ -247,3 +247,22 @@ Molecule rantate(Molecule* molecule, double* rands)
 
     return rotate(*molecule, theta, phi, gamma);
 }
+
+double romax(Molecule* molecule)
+{
+    double ro = 0.0;
+    for (auto atom: *molecule) {
+        double r = lj_radius(atom);
+        if (r > ro) {
+            ro = r;
+        }
+    }
+    
+#if NITROGEN
+    if (gas == "N2") {
+        ro += (1.1055e-10 / 2.0);
+    }
+#endif
+
+    return ro;
+}
