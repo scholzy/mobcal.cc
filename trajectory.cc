@@ -1,5 +1,6 @@
 #include <string>
 
+#include "constants.hpp"
 #include "trajectory.hpp"
 
 void derivative(Molecule* molecule, double* w, double* dw)

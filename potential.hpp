@@ -3,6 +3,7 @@
 
 #include <string>
 
+#include "constants.hpp"
 #include "molecule.hpp"
 
 typedef struct Potential {

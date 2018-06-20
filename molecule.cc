@@ -138,13 +138,13 @@ double align_x(Molecule* molecule)
 
 double lj_well(Atom atom)
 {
-#if BUFFER_GAS == NITROGEN
+#if NITROGEN
     double eogas = 0.06900;
     double conve = 4.2 * 0.01036427;
 #endif
     double well = 0.0;
 
-#if BUFFER_GAS == HELIUM
+#if HELIUM
     switch (atom.m) {
     case 1:
         well = 0.65e-3 * XE;
@@ -160,7 +160,7 @@ double lj_well(Atom atom)
         break;
     }
 
-#elif BUFFER_GAS == NITROGEN
+#elif NITROGEN
     switch (atom.m) {
     case 1:
         well = std::sqrt(eogas * 0.0189) * conve * XE;
@@ -183,13 +183,13 @@ double lj_well(Atom atom)
 
 double lj_radius(Atom atom)
 {
-#if BUFFER_GAS == NITROGEN
+#if NITROGEN
     double rogas = 3.66;
     double convr = 0.890898718;
 #endif
     double radius = 0.0;
 
-#if BUFFER_GAS == HELIUM
+#if HELIUM
     switch (atom.m) {
     case 1:
         radius = 2.38e-10;
@@ -232,9 +232,9 @@ double mu(Molecule* molecule)
     for (auto atom : *molecule) {
         mass += atom.m;
     }
-#if BUFFER_GAS == HELIUM
+#if HELIUM
     return ((4.0 * (double)mass) / (4.0 + (double)mass)) / (XN * 1e3);
-#elif BUFFER_GAS == NITROGEN
+#elif NITROGEN
     return ((28.0 * (double)mass) / (28.0 + (double)mass)) / (XN * 1e3);
 #endif
 }
