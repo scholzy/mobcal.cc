@@ -4,7 +4,7 @@ appname := mobcal
 # CXXFLAGS := -std=c++11 -g -O2 -march=native -Wall -pedantic -ffast-math -fopenmp
 
 # CXX := clang++
-# CXXFLAGS := -std=c++11 -g -Wall -pedantic -O2 -ffast-math
+# CXXFLAGS := -std=c++11 -g -Wall -pedantic -O2 # -ffast-math
 
 CXX := icc
 CXXFLAGS := -std=c++11 -g -Wall -pedantic -Ofast -qopenmp

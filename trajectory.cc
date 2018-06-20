@@ -177,7 +177,6 @@ Trajout trajectory(Molecule* molecule, double v, double b)
     do {
         do {
             diffeq(molecule, w, dw, &dt, &l, q, &hvar, &hcvar, &time, array);
-            // std::cout << w[0] << " " << w[2] << " " << w[4] << std::endl;
             nw += 1;
         } while (nw != INWR);
 
@@ -185,7 +184,7 @@ Trajout trajectory(Molecule* molecule, double v, double b)
         nw = 0;
 
         if (ns > 30000) {
-            break;
+            std::cout << "stuck!" << std::endl;
         }
 
         Point point = { w[0],

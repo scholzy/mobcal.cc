@@ -46,7 +46,6 @@ Potential potential(Molecule* molecule, Point point)
     }
 
     double pot_ = lj_pot - (DIPOL * (std::pow(ion_dip.x, 2) + std::pow(ion_dip.y, 2) + std::pow(ion_dip.z, 2)));
-    std::cout << lj_pot / XE << std::endl;
 
     Point force = { lj_der.x - (DIPOL * ((2.0 * ion_dip.x * sum[0]) + (2.0 * ion_dip.y * sum[1]) + (2.0 * ion_dip.z * sum[2]))),
         lj_der.y - (DIPOL * ((2.0 * ion_dip.x * sum[1]) + (2.0 * ion_dip.y * sum[3]) + (2.0 * ion_dip.z * sum[4]))),
@@ -63,16 +62,17 @@ Potential potential(Molecule* molecule, Point point)
     double sum[6];
 
     double pottry[2][3], pot_mol[3];
-    double dpotxtry[2][3], dpotx_mol[3], dpotytry[2][3], dpoty_mol[3], dpotztry[2][3], dpotz_mol[3];
+    double dpotxtry[2][3], dpotytry[2][3], dpotztry[2][3];
     double qpol = 0.0;
     Point dpol;
     Point dqpol;
+    Point dpot_mol[3];
 
     double dmax = 2.0 * romax(molecule);
     double bond = 1.0976e-10;
     double Ptfn = 0.0;
     double xkT = 500.0 * XK;
-    double pc = -0.4825e0;
+    double pc = -0.4825;
     double pc_center = -1.0 * pc;
     double dipolxx = (1.710e-30 / (2.0 * 4.0 * M_PI * XEO)) * XE * XE;
     double dipolzz = (1.710e-30 / (2.0 * 4.0 * M_PI * XEO)) * XE * XE;
@@ -166,19 +166,30 @@ Potential potential(Molecule* molecule, Point point)
                 dqpol.z -= (pc * const_k / std::pow(distance, 3)) * distance_.z;
             }
 
-            pottry[j][i] = lj_pot - 0.5 * ((dpol.x * ion_dip.x * ion_dip.x) + (dpol.y * ion_dip.y * ion_dip.y) + (dpol.z * ion_dip.z * ion_dip.z)) + qpol;
-            dpotxtry[j][i] = lj_der.x - 0.5 * ((dpol.x * 2.0 * ion_dip.x * sum[0]) + (dpol.y * 2.0 * ion_dip.y * sum[1]) + (dpol.z * 2.0 * ion_dip.z * sum[2])) + dqpol.x;
-            dpotxtry[j][i] = lj_der.y - 0.5 * ((dpol.x * 2.0 * ion_dip.x * sum[1]) + (dpol.y * 2.0 * ion_dip.y * sum[3]) + (dpol.z * 2.0 * ion_dip.z * sum[4])) + dqpol.y;
-            dpotxtry[j][i] = lj_der.z - 0.5 * ((dpol.x * 2.0 * ion_dip.x * sum[2]) + (dpol.y * 2.0 * ion_dip.y * sum[4]) + (dpol.z * 2.0 * ion_dip.z * sum[5])) + dqpol.z;
+            pottry[j][i] = lj_pot - 0.5 * ((dpol.x * ion_dip.x * ion_dip.x) +
+                                           (dpol.y * ion_dip.y * ion_dip.y) +
+                                           (dpol.z * ion_dip.z * ion_dip.z)) + qpol;
+            dpotxtry[j][i] = lj_der.x -
+                             0.5 * ((dpol.x * 2.0 * ion_dip.x * sum[0]) +
+                                    (dpol.y * 2.0 * ion_dip.y * sum[1]) +
+                                    (dpol.z * 2.0 * ion_dip.z * sum[2])) + dqpol.x;
+            dpotytry[j][i] = lj_der.y -
+                             0.5 * ((dpol.x * 2.0 * ion_dip.x * sum[1]) +
+                                    (dpol.y * 2.0 * ion_dip.y * sum[3]) +
+                                    (dpol.z * 2.0 * ion_dip.z * sum[4])) + dqpol.y;
+            dpotztry[j][i] = lj_der.z -
+                             0.5 * ((dpol.x * 2.0 * ion_dip.x * sum[2]) +
+                                    (dpol.y * 2.0 * ion_dip.y * sum[4]) +
+                                    (dpol.z * 2.0 * ion_dip.z * sum[5])) + dqpol.z;
         }
 
         pot_mol[i] = pottry[0][i] + pottry[1][i];
         if (pot_mol[i] < pot_min) {
             pot_min = pot_mol[i];
         }
-        dpotx_mol[i] = dpotxtry[0][i] + dpotxtry[1][i];
-        dpoty_mol[i] = dpotytry[0][i] + dpotytry[1][i];
-        dpotz_mol[i] = dpotztry[0][i] + dpotztry[1][i];
+        dpot_mol[i].x = dpotxtry[0][i] + dpotxtry[1][i];
+        dpot_mol[i].y = dpotytry[0][i] + dpotytry[1][i];
+        dpot_mol[i].z = dpotztry[0][i] + dpotztry[1][i];
     }
 
     for (int i = 0; i < 3; ++i) {
@@ -192,9 +203,9 @@ Potential potential(Molecule* molecule, Point point)
         double temp_pot = pot_mol[i] - pot_min;
         double weight = std::exp((-1.0 * temp_pot) / xkT) / Ptfn;
         pot_ += weight * pot_mol[i];
-        force.x += weight * dpotx_mol[i];
-        force.y += weight * dpoty_mol[i];
-        force.z += weight * dpotz_mol[i];
+        force.x += weight * dpot_mol[i].x;
+        force.y += weight * dpot_mol[i].y;
+        force.z += weight * dpot_mol[i].z;
     }
 
     Potential pot = { pot_, dmax, force };

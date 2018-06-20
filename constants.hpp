@@ -14,7 +14,7 @@ static const double XEO = 8.854187817e-12;
 #if HELIUM
 static const double DIPOL = 0.204956e-30 / (2.0 * 4.0 * M_PI * XEO) * XE * XE;
 #elif NITROGEN
-static const double DIPOL = 1.641e-30/(2.0*4.0 * M_PI * XEO) * XE * XE;
+static const double DIPOL = 1.641e-30 / (2.0*4.0 * M_PI * XEO) * XE * XE;
 #endif
 
 static const double T = 298.0;
@@ -23,8 +23,8 @@ static const double RO = 3.043e-10;
 static const double TST = XK * T / EO;
 
 static const int IPR = 100;
-/* static const int ITN = 10; */
-static const int ITN = 50;
+static const int ITN = 10;
+/* static const int ITN = 50; */
 
 /* static const int INP = 40; */
 static const int INP = 40;

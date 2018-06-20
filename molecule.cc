@@ -138,10 +138,6 @@ double align_x(Molecule* molecule)
 
 double lj_well(Atom atom)
 {
-#if NITROGEN
-    double eogas = 0.06900;
-    double conve = 4.2 * 0.01036427;
-#endif
     double well = 0.0;
 
 #if HELIUM
@@ -161,6 +157,8 @@ double lj_well(Atom atom)
     }
 
 #elif NITROGEN
+    double eogas = 0.06900;
+    double conve = 4.2 * 0.01036427;
     switch (atom.m) {
     case 1:
         well = std::sqrt(eogas * 0.0189) * conve * XE;
@@ -183,10 +181,6 @@ double lj_well(Atom atom)
 
 double lj_radius(Atom atom)
 {
-#if NITROGEN
-    double rogas = 3.66;
-    double convr = 0.890898718;
-#endif
     double radius = 0.0;
 
 #if HELIUM
@@ -206,6 +200,8 @@ double lj_radius(Atom atom)
     }
 
 #elif NITROGEN
+    double rogas = 3.66;
+    double convr = 0.890898718;
     switch (atom.m) {
     case 1:
         radius = std::sqrt(rogas * 1.2409) * convr * 1.0e-10;

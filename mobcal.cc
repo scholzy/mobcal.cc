@@ -123,6 +123,8 @@ void setup_gst(Molecule* molecule, double* wgst, double* pgst)
         hold1 = std::sqrt((pgst[i] * pgst[i] * EO) / (0.5 * mu(molecule)));
         hold2 = 0.5 * mu(molecule) * std::pow(hold1, 2) / (XK * T);
         hold3 = std::exp(-1.0 * std::pow(pgst[i], 2) / TST) * std::pow(pgst[i], 5);
+
+        std::cout << pgst[i] << "\t" << wgst[i] << "\t" << hold1 << "\t" << hold2 << "\t" << hold3 << "\t" << sum / std::pow(TST, 3) << std::endl;
     }
 }
 
@@ -170,6 +172,10 @@ void setup_bst(Molecule* molecule, double* wgst, double* pgst, double* b2max, do
             double b = RO * std::sqrt(b2max[i]);
             trj = trajectory(molecule, v, b);
         } while (1.0 - std::cos(trj.ang) > CMIN);
+    }
+
+    for (int i = 0; i < INP; ++i) {
+        std::cout << pgst[i] << "\t" << b2max[i] << "\t" << RO * std::sqrt(b2max[i]) * 1.0e10 << std::endl;
     }
 }
 
@@ -237,17 +243,19 @@ void mobil2(Molecule molecule)
 
     double distance_max = align_x(&molecule);
 
-    std::string gas = "He";
-
     Point extents = get_extents(&molecule, distance_max);
 
     double wgst[INP];
     double pgst[INP];
     setup_gst(&molecule, wgst, pgst);
 
+    std::cout << "Done with gst!" << std::endl;
+
     double b2max[INP];
     double cosx[2000];
     setup_bst(&molecule, wgst, pgst, b2max, cosx, extents);
+
+    std::cout << "Done with bst!" << std::endl;
 
     calculate(&molecule, wgst, pgst, b2max, cosx, rng);
 }
