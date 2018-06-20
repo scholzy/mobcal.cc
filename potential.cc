@@ -3,7 +3,9 @@
 #include "potential.hpp"
 #include "constants.hpp"
 
-Potential potential(Molecule* molecule, Point point, std::string gas)
+#if BUFFER_GAS == HELIUM
+
+Potential potential(Molecule* molecule, Point point)
 {
     double lj_pot = 0.0;
     Point lj_der = { 0.0, 0.0, 0.0 }, ion_dip = { 0.0, 0.0, 0.0 };
@@ -53,3 +55,5 @@ Potential potential(Molecule* molecule, Point point, std::string gas)
         force };
     return pot;
 }
+
+#endif

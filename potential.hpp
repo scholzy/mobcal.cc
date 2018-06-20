@@ -11,6 +11,6 @@ typedef struct Potential {
     Point force;
 } Potential;
 
-Potential potential(Molecule* molecule, Point point, std::string gas);
+Potential potential(Molecule* molecule, Point point);
 
 #endif

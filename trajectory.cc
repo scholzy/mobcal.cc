@@ -2,20 +2,20 @@
 
 #include "trajectory.hpp"
 
-void derivative(Molecule* molecule, std::string gas, double* w, double* dw)
+void derivative(Molecule* molecule, double* w, double* dw)
 {
     dw[0] = w[1] / mu(molecule);
     dw[2] = w[3] / mu(molecule);
     dw[4] = w[5] / mu(molecule);
 
     Point point = { w[0], w[2], w[4] };
-    Potential p = potential(molecule, point, gas);
+    Potential p = potential(molecule, point);
     dw[1] = -1.0 * p.force.x;
     dw[3] = -1.0 * p.force.y;
     dw[5] = -1.0 * p.force.z;
 }
 
-void diffeq(Molecule* molecule, std::string gas, double* w, double* dw, double* dt, int* l, double* q, double* hvar, double* hcvar, double* time, double array[][40])
+void diffeq(Molecule* molecule, double* w, double* dw, double* dt, int* l, double* q, double* hvar, double* hcvar, double* time, double array[][40])
 {
     double a[4] = { 0.50, 0.292893218814, 1.70710678118, 0.1666666666667 };
     double b[4] = { 2.0, 1.0, 1.0, 2.0 };
@@ -59,7 +59,7 @@ void diffeq(Molecule* molecule, std::string gas, double* w, double* dw, double* 
                 }
             }
 
-            derivative(molecule, gas, w, dw);
+            derivative(molecule, w, dw);
             k += 1;
         } while (k != 1);
 
@@ -84,7 +84,7 @@ void diffeq(Molecule* molecule, std::string gas, double* w, double* dw, double* 
             w[j] += array[5][j] * (*hvar);
         }
         *time += *dt;
-        derivative(molecule, gas, w, dw);
+        derivative(molecule, w, dw);
         for (int j = 0; j < 6; j++) {
             array[5][j] = acst * dw[j];
             for (int i = 0; i < 4; i++) {
@@ -94,11 +94,11 @@ void diffeq(Molecule* molecule, std::string gas, double* w, double* dw, double* 
             array[4][j] = savdw[j];
             w[j] = savw[j] + (*hcvar) * (array[4][j] + array[5][j]);
         }
-        derivative(molecule, gas, w, dw);
+        derivative(molecule, w, dw);
     }
 }
 
-Trajout trajectory(Molecule* molecule, std::string gas, double v, double b)
+Trajout trajectory(Molecule* molecule, double v, double b)
 {
     Point vel = { 0.0, -1.0 * v, 0.0 };
 
@@ -132,21 +132,21 @@ Trajout trajectory(Molecule* molecule, std::string gas, double v, double b)
     y_min -= 1e-10;
 
     coord.y = y_max;
-    Potential p = potential(molecule, coord, gas);
+    Potential p = potential(molecule, coord);
 
     if (std::fabs(p.potential / e0) <= SW1) {
         do {
             coord.y -= 1e-10;
-            p = potential(molecule, coord, gas);
+            p = potential(molecule, coord);
         } while (std::fabs(p.potential) / e0 < SW1);
     } else {
         do {
             coord.y += 10e-10;
-            p = potential(molecule, coord, gas);
+            p = potential(molecule, coord);
         } while (std::fabs(p.potential) / e0 > SW1);
         do {
             coord.y -= 1e-10;
-            p = potential(molecule, coord, gas);
+            p = potential(molecule, coord);
         } while (std::fabs(p.potential) / e0 > SW1);
     }
 
@@ -159,7 +159,7 @@ Trajout trajectory(Molecule* molecule, std::string gas, double v, double b)
         coord.z, vel.z * mu(molecule) };
     double dw[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
-    derivative(molecule, gas, w, dw);
+    derivative(molecule, w, dw);
 
     int l = 0;
     int ns = 0;
@@ -173,7 +173,7 @@ Trajout trajectory(Molecule* molecule, std::string gas, double v, double b)
 
     do {
         do {
-            diffeq(molecule, gas, w, dw, &dt, &l, q, &hvar, &hcvar, &time, array);
+            diffeq(molecule, w, dw, &dt, &l, q, &hvar, &hcvar, &time, array);
             // std::cout << w[0] << " " << w[2] << " " << w[4] << std::endl;
             nw += 1;
         } while (nw != INWR);
@@ -188,7 +188,7 @@ Trajout trajectory(Molecule* molecule, std::string gas, double v, double b)
         Point point = { w[0],
             w[2],
             w[4] };
-        p = potential(molecule, point, gas);
+        p = potential(molecule, point);
 
         if (p.dmax < ROMAX) {
             continue;

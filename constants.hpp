@@ -3,6 +3,11 @@
 
 #include <cmath>
 
+#define HELIUM 1
+#define NITROGEN 2
+
+#define BUFFER_GAS HELIUM
+
 static const double XE = 1.60217733e-19;
 static const double XN = 6.0221367e23;
 static const double XK = 1.380658e-23;

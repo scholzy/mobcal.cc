@@ -29,7 +29,7 @@ Molecule get_input(std::string file)
     return molecule;
 }
 
-Point get_extents(Molecule* molecule, std::string gas, double dmax)
+Point get_extents(Molecule* molecule, double dmax)
 {
     int irn = 1000;
     double ddd = (ROMAX + dmax) / (double)irn;
@@ -40,7 +40,7 @@ Point get_extents(Molecule* molecule, std::string gas, double dmax)
 
     for (int i = 0; i < irn; ++i) {
         coord.x = ROMAX + dmax - ((double)i + 1.0) * ddd;
-        Potential p = potential(molecule, coord, gas);
+        Potential p = potential(molecule, coord);
         if (p.potential > 0.0) {
             break;
         }
@@ -54,7 +54,7 @@ Point get_extents(Molecule* molecule, std::string gas, double dmax)
 
     for (int i = 0; i < irn; ++i) {
         coord.y = ROMAX + dmax - ((double)i + 1.0) * ddd;
-        Potential p = potential(molecule, coord, gas);
+        Potential p = potential(molecule, coord);
         if (p.potential > 0.0) {
             break;
         }
@@ -68,7 +68,7 @@ Point get_extents(Molecule* molecule, std::string gas, double dmax)
 
     for (int i = 0; i < irn; ++i) {
         coord.z = ROMAX + dmax - ((double)i + 1.0) * ddd;
-        Potential p = potential(molecule, coord, gas);
+        Potential p = potential(molecule, coord);
         if (p.potential > 0.0) {
             break;
         }
@@ -126,7 +126,7 @@ void setup_gst(Molecule* molecule, double* wgst, double* pgst)
     }
 }
 
-void setup_bst(Molecule* molecule, std::string gas, double* wgst, double* pgst, double* b2max, double* cosx, Point extents)
+void setup_bst(Molecule* molecule, double* wgst, double* pgst, double* b2max, double* cosx, Point extents)
 {
     double dbst2 = 1.0;
     double dbst22 = dbst2 / 10.0;
@@ -152,7 +152,7 @@ void setup_bst(Molecule* molecule, std::string gas, double* wgst, double* pgst, 
         do {
             bst2 = dbst2 * ((double)ibst);
             b = RO * std::sqrt(bst2);
-            Trajout trj = trajectory(molecule, gas, v, b);
+            Trajout trj = trajectory(molecule, v, b);
             cosx[ibst] = 1.0 - std::cos(trj.ang);
 
             if (ibst > 5) {
@@ -168,12 +168,12 @@ void setup_bst(Molecule* molecule, std::string gas, double* wgst, double* pgst, 
         do {
             b2max[i] += dbst22;
             double b = RO * std::sqrt(b2max[i]);
-            trj = trajectory(molecule, gas, v, b);
+            trj = trajectory(molecule, v, b);
         } while (1.0 - std::cos(trj.ang) > CMIN);
     }
 }
 
-void calculate(Molecule* molecule, std::string gas, double* wgst, double* pgst, double* b2max, double* cosx, std::mt19937_64 rng)
+void calculate(Molecule* molecule, double* wgst, double* pgst, double* b2max, double* cosx, std::mt19937_64 rng)
 {
     double q1st[INP] = { 0.0 };
     double q2st[INP] = { 0.0 };
@@ -202,7 +202,7 @@ void calculate(Molecule* molecule, std::string gas, double* wgst, double* pgst, 
                 Molecule mol = rantate(molecule, rands);
                 double bst2 = rnb * b2max[j];
                 double b = RO * std::sqrt(bst2);
-                Trajout trj = trajectory(&mol, gas, v, b);
+                Trajout trj = trajectory(&mol, v, b);
                 double hold1 = 1.0 - std::cos(trj.ang);
                 double hold2 = std::pow(std::sin(trj.ang), 2);
                 temp1 += hold1 * b2max[j] / (double)IMP;
@@ -239,7 +239,7 @@ void mobil2(Molecule molecule)
 
     std::string gas = "He";
 
-    Point extents = get_extents(&molecule, gas, distance_max);
+    Point extents = get_extents(&molecule, distance_max);
 
     double wgst[INP];
     double pgst[INP];
@@ -247,9 +247,9 @@ void mobil2(Molecule molecule)
 
     double b2max[INP];
     double cosx[2000];
-    setup_bst(&molecule, gas, wgst, pgst, b2max, cosx, extents);
+    setup_bst(&molecule, wgst, pgst, b2max, cosx, extents);
 
-    calculate(&molecule, gas, wgst, pgst, b2max, cosx, rng);
+    calculate(&molecule, wgst, pgst, b2max, cosx, rng);
 }
 
 int main(int argc, char** argv)
