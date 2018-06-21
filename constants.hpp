@@ -23,8 +23,9 @@ static const double RO = 3.043e-10;
 static const double TST = XK * T / EO;
 
 static const int IPR = 100;
-static const int ITN = 10;
+/* static const int ITN = 10; */
 /* static const int ITN = 50; */
+static const int ITN = 100;
 
 /* static const int INP = 40; */
 static const int INP = 40;

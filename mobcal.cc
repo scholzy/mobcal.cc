@@ -133,31 +133,33 @@ void setup_bst(Molecule* molecule, double* wgst, double* pgst, double* b2max, do
     double dbst2 = 1.0;
     double dbst22 = dbst2 / 10.0;
 
-    for (int i = 0; i < INP; i++) {
+    for (int i = 0; i < INP; ++i) {
         b2max[i] = 0.0;
     }
 
-    for (int i = INP - 1; i >= 0; i--) {
-        double gst2 = std::pow(pgst[i], 2);
+    for (int i = INP - 1; i >= 0; --i) {
+        double gst2 = pgst[i] * pgst[i];
         double v = std::sqrt((gst2 * EO) / (0.5 * mu(molecule)));
         int ibst = std::trunc(extents.x / RO) - 6;
 
         if (i + 1 < INP) {
-            ibst = std::trunc(b2max[i + 1] / dbst2) - 6;
+            ibst = std::trunc(b2max[i] / dbst2) - 6;
         }
 
         if (ibst < 0) {
             ibst = 0;
         }
 
-        double bst2 = 0.0, b = 0.0;
+        double bst2, b;
+        Trajout trj;
         do {
             bst2 = dbst2 * ((double)ibst);
             b = RO * std::sqrt(bst2);
-            Trajout trj = trajectory(molecule, v, b);
+            trj = trajectory(molecule, v, b);
             cosx[ibst] = 1.0 - std::cos(trj.ang);
+            /* std::cout << b << "\t" << bst2 << "\t" << trj.ang << "\t" << cosx[ibst] << "\t" << trj.erat << std::endl; */
 
-            if (ibst > 5) {
+            if (ibst >= 5) {
                 if ((cosx[ibst] < CMIN) && (cosx[ibst - 1] < CMIN) && (cosx[ibst - 2] < CMIN) && (cosx[ibst - 3] < CMIN) && (cosx[ibst - 4] < CMIN)) {
                     break;
                 }
@@ -166,10 +168,9 @@ void setup_bst(Molecule* molecule, double* wgst, double* pgst, double* b2max, do
         } while (1);
 
         b2max[i] = (double)(ibst - 5) * dbst2;
-        Trajout trj;
         do {
             b2max[i] += dbst22;
-            double b = RO * std::sqrt(b2max[i]);
+            b = RO * std::sqrt(b2max[i]);
             trj = trajectory(molecule, v, b);
         } while (1.0 - std::cos(trj.ang) > CMIN);
     }

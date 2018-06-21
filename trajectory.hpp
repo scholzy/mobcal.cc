@@ -18,4 +18,6 @@ void diffeq(Molecule* molecule, double* w, double* dw, double* dt, int* l, doubl
 
 Trajout trajectory(Molecule* molecule, double v, double b);
 
+void trajone(Molecule* molecule, double v, double b, double ntheta, double nphi, double ngamma);
+
 #endif
