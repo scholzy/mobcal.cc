@@ -1,13 +1,13 @@
 appname := mobcal
 
-# CXX := g++-8
-# CXXFLAGS := -std=c++11 -g -O2 -march=native -Wall -pedantic -ffast-math -fopenmp
+CXX := g++-8
+CXXFLAGS := -std=c++11 -g -O3 -march=native -Wall -pedantic -ffast-math -flto -fopenmp
 
 # CXX := clang++
-# CXXFLAGS := -std=c++11 -g -Wall -pedantic -O2 # -ffast-math
+# CXXFLAGS := -std=c++11 -g -march=native -Wall -pedantic -O2 -ffast-math
 
-CXX := icc
-CXXFLAGS := -std=c++11 -g -Wall -pedantic -Ofast -qopenmp
+# CXX := icc
+# CXXFLAGS := -std=c++11 -g -Wall -pedantic -Ofast -qopenmp
 
 srcfiles := $(shell find . -name "*.cc")
 objects := $(patsubst %.cc, %.o, $(srcfiles))

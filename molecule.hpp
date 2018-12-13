@@ -14,7 +14,7 @@ typedef struct Point {
 } Point;
 
 typedef struct Atom {
-    int m;
+    double m;
     double q;
     double x;
     double y;

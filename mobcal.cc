@@ -13,8 +13,7 @@
 Molecule get_input(std::string file)
 {
     std::fstream input_file(file.c_str());
-    int elem;
-    double x, y, z, charge;
+    double elem, x, y, z, charge;
     Molecule molecule;
 
     while (input_file >> elem >> x >> y >> z >> charge) {
@@ -33,13 +32,15 @@ Point get_extents(Molecule* molecule, double dmax)
 {
     int irn = 1000;
     double ddd = (romax(molecule) + dmax) / (double)irn;
+    std::cout << ddd << std::endl;
     Point e_max = { 0.0, 0.0, 0.0 };
     Point r_max = { 0.0, 0.0, 0.0 };
     Point r00_max = { 0.0, 0.0, 0.0 };
     Point coord = { 0.0, 0.0, 0.0 };
 
-    for (int i = 0; i < irn; ++i) {
-        coord.x = romax(molecule) + dmax - ((double)i + 1.0) * ddd;
+    for (int i = 1; i <= irn; ++i) {
+        coord.x = romax(molecule) + dmax - ((double)i * ddd);
+        coord.y = 0.0, coord.z = 0.0;
         Potential p = potential(molecule, coord);
         if (p.potential > 0.0) {
             break;
@@ -50,11 +51,14 @@ Point get_extents(Molecule* molecule, double dmax)
             r_max.x = coord.x;
         }
     }
-    coord.x = 0.0;
 
-    for (int i = 0; i < irn; ++i) {
-        coord.y = romax(molecule) + dmax - ((double)i + 1.0) * ddd;
+    std::cout << "Y STARTING" << std::endl;
+
+    for (int i = 1; i <= irn; ++i) {
+        coord.y = romax(molecule) + dmax - ((double)i * ddd);
+        coord.x = 0.0, coord.z = 0.0;
         Potential p = potential(molecule, coord);
+        /* std::cout << coord.y/1e-10 << "\t" << p.potential/XE << std::endl; */
         if (p.potential > 0.0) {
             break;
         }
@@ -64,10 +68,10 @@ Point get_extents(Molecule* molecule, double dmax)
             r_max.y = coord.y;
         }
     }
-    coord.y = 0.0;
 
-    for (int i = 0; i < irn; ++i) {
-        coord.z = romax(molecule) + dmax - ((double)i + 1.0) * ddd;
+    for (int i = 1; i <= irn; ++i) {
+        coord.z = romax(molecule) + dmax - ((double)i * ddd);
+        coord.x = 0.0, coord.y = 0.0;
         Potential p = potential(molecule, coord);
         if (p.potential > 0.0) {
             break;
@@ -89,6 +93,12 @@ Point get_extents(Molecule* molecule, double dmax)
     std::cout << r_max.x / 1e-10 << "\t"
               << r_max.y / 1e-10 << "\t"
               << r_max.z / 1e-10 << "\n"
+              << std::endl;
+
+    std::cout << "Distance where e = 0 along the x-, y-, and z-axes:" << std::endl;
+    std::cout << r00_max.x / 1e-10 << "\t"
+              << r00_max.y / 1e-10 << "\t"
+              << r00_max.z / 1e-10 << "\n"
               << std::endl;
 
     return r_max;
@@ -142,8 +152,8 @@ void setup_bst(Molecule* molecule, double* wgst, double* pgst, double* b2max, do
         double v = std::sqrt((gst2 * EO) / (0.5 * mu(molecule)));
         int ibst = std::trunc(extents.x / RO) - 6;
 
-        if (i + 1 < INP) {
-            ibst = std::trunc(b2max[i] / dbst2) - 6;
+        if (i < INP - 1) {
+            ibst = std::trunc(b2max[i+1] / dbst2) - 6;
         }
 
         if (ibst < 0) {
@@ -172,7 +182,10 @@ void setup_bst(Molecule* molecule, double* wgst, double* pgst, double* b2max, do
             b2max[i] += dbst22;
             b = RO * std::sqrt(b2max[i]);
             trj = trajectory(molecule, v, b);
-        } while (1.0 - std::cos(trj.ang) > CMIN);
+            if (1.0 - std::cos(trj.ang) < CMIN) {
+                break;
+            }
+        } while (1);
     }
 
     for (int i = 0; i < INP; ++i) {

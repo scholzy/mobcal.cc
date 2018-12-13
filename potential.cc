@@ -10,14 +10,14 @@ Potential potential(Molecule* molecule, Point point)
     double lj_pot = 0.0;
     Point lj_der = { 0.0, 0.0, 0.0 }, ion_dip = { 0.0, 0.0, 0.0 };
     double sum[6] = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
-    double dmax = 0.0;
+    double dmax = 2 * RO;
 
     for (auto atom : *molecule) {
-        Point distance_ = { std::fabs(atom.x - point.x),
-            std::fabs(atom.y - point.y),
-            std::fabs(atom.z - point.z) };
+        Point distance_ = { point.x - atom.x,
+            point.y - atom.y,
+            point.z - atom.z };
         double distance = std::sqrt(distance_.x * distance_.x + distance_.y * distance_.y + distance_.z * distance_.z);
-        if (distance > dmax) {
+        if (distance < dmax) {
             dmax = distance;
         }
 
@@ -45,7 +45,9 @@ Potential potential(Molecule* molecule, Point point)
         sum[5] += rxyz3i + pow(distance_.z, 2) * rxyz5i;
     }
 
-    double pot_ = lj_pot - (DIPOL * (std::pow(ion_dip.x, 2) + std::pow(ion_dip.y, 2) + std::pow(ion_dip.z, 2)));
+    double pot_ = lj_pot - (DIPOL * (ion_dip.x * ion_dip.x + ion_dip.y * ion_dip.y + ion_dip.z * ion_dip.z));
+    /* std::cout << pot_ / XE << std::endl; */
+    /* std::cout << lj_pot/XE << "\t" << DIPOL * (ion_dip.x * ion_dip.x)/XE << "\t" << DIPOL * (ion_dip.y * ion_dip.y) / XE << "\t" << DIPOL * (ion_dip.z * ion_dip.z) /XE << std::endl; */
 
     Point force = { lj_der.x - (DIPOL * ((2.0 * ion_dip.x * sum[0]) + (2.0 * ion_dip.y * sum[1]) + (2.0 * ion_dip.z * sum[2]))),
         lj_der.y - (DIPOL * ((2.0 * ion_dip.x * sum[1]) + (2.0 * ion_dip.y * sum[3]) + (2.0 * ion_dip.z * sum[4]))),

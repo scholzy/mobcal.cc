@@ -41,6 +41,7 @@ void diffeq(Molecule* molecule, double* w, double* dw, double* dt, int* l, doubl
         }
         *hvar = (*dt) * var;
         *hcvar = (*dt) * cvar;
+        *dt = (*dt) * 0.5;
     }
 
     if (*l >= 0) {
@@ -55,7 +56,7 @@ void diffeq(Molecule* molecule, double* w, double* dw, double* dt, int* l, doubl
                     double r = a[j] * (dw[i] - b[j] * q[i]);
                     // std::cout << r << std::endl;
                     w[i] += r;
-                    q[i] += 3.0 * r + c[j] * dw[i];
+                    q[i] += 3.0 * r + (c[j] * dw[i]);
                 }
             }
 
@@ -68,14 +69,18 @@ void diffeq(Molecule* molecule, double* w, double* dw, double* dt, int* l, doubl
             return;
         } else {
             for (int j = 0; j < 6; j++) {
-                array[*l - 1][j] = dw[j];
+                array[(*l) - 1][j] = dw[j];
             }
             return;
         }
     } else {
-        double savw[6] = { w[0], w[1], w[2], w[3], w[4], w[5] };
-        double savdw[6] = { dw[0], dw[1], dw[2], dw[3], dw[4], dw[5] };
+        /* double savw[6] = { w[0], w[1], w[2], w[3], w[4], w[5] }; */
+        /* double savdw[6] = { dw[0], dw[1], dw[2], dw[3], dw[4], dw[5] }; */
+        double savw[6];
+        double savdw[6];
         for (int j = 0; j < 6; j++) {
+            savw[j] = w[j];
+            savdw[j] = dw[j];
             array[5][j] = savdw[j];
             for (int i = 0; i < 5; i++) {
                 array[5][j] += ampc[i] * array[i][j];
@@ -103,10 +108,10 @@ Trajout trajectory(Molecule* molecule, double v, double b)
 
     /* Determine time step for integration */
     double top = (v / 95.2381) - 0.5;
-    if (v > 1000.0) {
+    if (v >= 1000.0) {
         top = 10.0;
     }
-    if (v >= 2000) {
+    if (v >= 2000.0) {
         top = 10.0 - ((v - 2000.0) * 7.5e-3);
     }
     if (v >= 3000.0) {
@@ -140,7 +145,7 @@ Trajout trajectory(Molecule* molecule, double v, double b)
         do {
             coord.y -= 1e-10;
             p = potential(molecule, coord);
-            if (std::fabs(p.potential / e0) > SW1) {
+            if (std::fabs(p.potential / e0) >= SW1) {
                 break;
             }
         } while (1);
@@ -148,14 +153,14 @@ Trajout trajectory(Molecule* molecule, double v, double b)
         do {
             coord.y += 10e-10;
             p = potential(molecule, coord);
-            if (std::fabs(p.potential / e0) < SW1) {
+            if (std::fabs(p.potential / e0) <= SW1) {
                 break;
             }
         } while (1);
         do {
             coord.y -= 1e-10;
             p = potential(molecule, coord);
-            if (std::fabs(p.potential / e0) > SW1) {
+            if (std::fabs(p.potential / e0) >= SW1) {
                 break;
             }
         } while (1);

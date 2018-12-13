@@ -3,23 +3,36 @@
 void align_com(Molecule* molecule)
 {
     Point com = { 0.0, 0.0, 0.0 };
-    int mass = 0;
+    double mass = 0.0;
 
     for (auto atom : *molecule) {
-        com.x += atom.x * (double)atom.m;
-        com.y += atom.y * (double)atom.m;
-        com.z += atom.z * (double)atom.m;
-        mass += atom.m;
+        double m = 0.0;
+        if (atom.m == 1.0) {
+            m = 1.008;
+        } else if (atom.m == 12.0) {
+            m = 12.01;
+        } else if (atom.m == 14.0) {
+            m = 14.01;
+        } else if (atom.m == 16.0) {
+            m = 16.00;
+        }
+        com.x += atom.x * m;
+        com.y += atom.y * m;
+        com.z += atom.z * m;
+        mass += m;
     }
 
-    com.x /= (double)mass;
-    com.y /= (double)mass;
-    com.z /= (double)mass;
+    com.x /= mass;
+    com.y /= mass;
+    com.z /= mass;
+
+    std::cout << "COM coords: " << com.x << "\t" << com.y << "\t" << com.z << std::endl;
 
     for (auto& atom : *molecule) {
         atom.x = (atom.x - com.x) * 1e-10;
         atom.y = (atom.y - com.y) * 1e-10;
         atom.z = (atom.z - com.z) * 1e-10;
+        std::cout << atom.m << "\t" << atom.x << "\t" << atom.y << "\t" << atom.z << std::endl;
     }
 }
 
@@ -94,7 +107,7 @@ double align_x(Molecule* molecule)
     double distance_zy = std::sqrt(atom_max.z * atom_max.z + atom_max.y * atom_max.y);
     double phi = std::acos(atom_max.z / distance_zy) + (M_PI / 2.0);
 
-    if (atom_max.y > 0.0) {
+    if (atom_max.y < 0.0) {
         phi = 2.0 * M_PI - phi;
     }
 
@@ -141,37 +154,27 @@ double lj_well(Atom atom)
     double well = 0.0;
 
 #if HELIUM
-    switch (atom.m) {
-    case 1:
+    if (atom.m == 1.0) {
         well = 0.65e-3 * XE;
-        break;
-    case 12:
+    } else if (atom.m == 12.0) {
         well = 1.34e-3 * XE;
-        break;
-    case 14:
+    } else if (atom.m == 14.0) {
         well = 1.34e-3 * XE;
-        break;
-    case 16:
+    } else if (atom.m == 16.0) {
         well = 1.34e-3 * XE;
-        break;
     }
 
 #elif NITROGEN
     double eogas = 0.06900;
     double conve = 4.2 * 0.01036427;
-    switch (atom.m) {
-    case 1:
+    if (atom.m == 1.0) {
         well = std::sqrt(eogas * 0.0189) * conve * XE;
-        break;
-    case 12:
+    } else if (atom.m == 12.0) {
         well = std::sqrt(eogas * 0.0977) * conve * XE;
-        break;
-    case 14:
+    } else if (atom.m == 14.0) {
         well = std::sqrt(eogas * 0.0828) * conve * XE;
-        break;
-    case 16:
+    } else if (atom.m == 16.0) {
         well = std::sqrt(eogas * 0.0558) * conve * XE;
-        break;
     }
 
 #endif
@@ -184,37 +187,27 @@ double lj_radius(Atom atom)
     double radius = 0.0;
 
 #if HELIUM
-    switch (atom.m) {
-    case 1:
+    if (atom.m == 1.0) {
         radius = 2.38e-10;
-        break;
-    case 12:
+    } else if (atom.m == 12.0) {
         radius = 3.043e-10;
-        break;
-    case 14:
+    } else if (atom.m == 14.0) {
         radius = 3.043e-10;
-        break;
-    case 16:
+    } else if (atom.m == 16.0) {
         radius = 3.043e-10;
-        break;
     }
 
 #elif NITROGEN
     double rogas = 3.66;
     double convr = 0.890898718;
-    switch (atom.m) {
-    case 1:
+    if (atom.m == 1.0) {
         radius = std::sqrt(rogas * 1.2409) * convr * 1.0e-10;
-        break;
-    case 12:
+    } else if (atom.m == 12.0) {
         radius = std::sqrt(rogas * 3.5814) * convr * 1.0e-10;
-        break;
-    case 14:
+    } else if (atom.m == 14.0) {
         radius = std::sqrt(rogas * 4.3920) * convr * 1.0e-10;
-        break;
-    case 16:
+    } else if (atom.m == 16.0) {
         radius = std::sqrt(rogas * 3.2550) * convr * 1.0e-10;
-        break;
     }
 
 #endif
@@ -229,7 +222,7 @@ double mu(Molecule* molecule)
         mass += atom.m;
     }
 #if HELIUM
-    return ((4.0 * (double)mass) / (4.0 + (double)mass)) / (XN * 1e3);
+    return ((4.0026 * (double)mass) / (4.0 + (double)mass)) / (XN * 1e3);
 #elif NITROGEN
     return ((28.0 * (double)mass) / (28.0 + (double)mass)) / (XN * 1e3);
 #endif

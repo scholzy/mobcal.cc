@@ -22,15 +22,17 @@ static const double EO = 1.34e-3 * XE;
 static const double RO = 3.043e-10;
 static const double TST = XK * T / EO;
 
-static const int IPR = 100;
-/* static const int ITN = 10; */
-/* static const int ITN = 50; */
-static const int ITN = 100;
+/* static const int ITN = 100; */
+/* static const int ITN = 40; */
 
-/* static const int INP = 40; */
+// Mobcal default
+static const int ITN = 50;
+
 static const int INP = 40;
-/* static const int IMP = 25; */
+
 static const int IMP = 50;
+/* static const int IMP = 60; */
+
 static const double CMIN = 0.0005;
 
 static const double SW1 = 0.00005;
