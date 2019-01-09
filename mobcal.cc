@@ -28,11 +28,15 @@ Molecule get_input(std::string file)
     return molecule;
 }
 
+/*
+ * Find the potential wells around the molecule along the x-, y-, and z-axes, as
+ * well as the points where the potential is zero. These are used when setting
+ * up the integration over the impact parameter.
+ */
 Point get_extents(Molecule* molecule, double dmax)
 {
     int irn = 1000;
     double ddd = (romax(molecule) + dmax) / (double)irn;
-    std::cout << ddd << std::endl;
     Point e_max = { 0.0, 0.0, 0.0 };
     Point r_max = { 0.0, 0.0, 0.0 };
     Point r00_max = { 0.0, 0.0, 0.0 };
@@ -52,13 +56,10 @@ Point get_extents(Molecule* molecule, double dmax)
         }
     }
 
-    std::cout << "Y STARTING" << std::endl;
-
     for (int i = 1; i <= irn; ++i) {
         coord.y = romax(molecule) + dmax - ((double)i * ddd);
         coord.x = 0.0, coord.z = 0.0;
         Potential p = potential(molecule, coord);
-        /* std::cout << coord.y/1e-10 << "\t" << p.potential/XE << std::endl; */
         if (p.potential > 0.0) {
             break;
         }
@@ -104,6 +105,10 @@ Point get_extents(Molecule* molecule, double dmax)
     return r_max;
 }
 
+/*
+ * Initialize integration over the reduced velocity. This section is independent
+ * of the potential (i.e. the buffer gas or the potential model itself).
+ */
 void setup_gst(Molecule* molecule, double* wgst, double* pgst)
 {
     double dgst = 5.0e-7 * 6.0 * sqrt(TST);
@@ -138,6 +143,12 @@ void setup_gst(Molecule* molecule, double* wgst, double* pgst)
     }
 }
 
+/*
+ * Set up the integration over impact parameter b. This section is the most
+ * numerically sensitive, as there are many trajectories run and the starting
+ * positions /must/ be the same (to 1 decimal place) as the original MOBCAL code
+ * to ensure numerically identical results.
+ */
 void setup_bst(Molecule* molecule, double* wgst, double* pgst, double* b2max, double* cosx, Point extents)
 {
     double dbst2 = 1.0;
@@ -193,28 +204,41 @@ void setup_bst(Molecule* molecule, double* wgst, double* pgst, double* b2max, do
     }
 }
 
+/*
+ * Calculate the orientationally-averaged collision cross section for the ion.
+ * The main loop, which is a Monte-Carlo integration, is trivially parallelized
+ * using OpenMP. 
+ */
 void calculate(Molecule* molecule, double* wgst, double* pgst, double* b2max, double* cosx, std::mt19937_64 rng)
 {
     double q1st[INP] = { 0.0 };
     double q2st[INP] = { 0.0 };
 
-    double om11st[ITN] = { 0.0 };
-    double om12st[ITN] = { 0.0 };
-    double om13st[ITN] = { 0.0 };
-    double om22st[ITN] = { 0.0 };
+    double om11st[500] = { 0.0 };
+    double om12st[500] = { 0.0 };
+    double om13st[500] = { 0.0 };
+    double om22st[500] = { 0.0 };
+
+    double means[500] = { 0.0 };
+
+    int i = 0;
 
     std::uniform_real_distribution<double> unif;
-    for (int i = 0; i < ITN; ++i) {
+
+    // The main working loop. ITN is the total number of cycles.
+    while (1) {
         om11st[i] = 0.0;
         om12st[i] = 0.0;
         om13st[i] = 0.0;
         om22st[i] = 0.0;
 
+	// Integrate over the reduced velocity gst2.
         for (int j = 0; j < INP; ++j) {
             double gst2 = std::pow(pgst[j], 2);
             double v = std::sqrt((gst2 * EO) / (0.5 * mu(molecule)));
             double temp1 = 0.0, temp2 = 0.0;
 
+	    // Monte Carlo integration over the impact parameter b.
 #pragma omp parallel for
             for (int k = 0; k < IMP; ++k) {
                 double rnb = unif(rng);
@@ -237,15 +261,53 @@ void calculate(Molecule* molecule, double* wgst, double* pgst, double* b2max, do
             q2st[j] += temp2;
         }
 
-        printf("Cycle %2d: %f\n", i, om11st[i] * M_PI * RO * RO * 1e20);
+        double variance = 0.0;
+        for (int j = 0; j <= i; j++) {
+            means[i] += om11st[j];
+        }
+        means[i] /= (i + 1);
+        for (int j = 0; j <= i; j++) {
+            variance += std::pow(om11st[j] - means[i], 2);
+        }
+        variance /= i;
+        double stdev = std::sqrt(variance);
+        double pcdev = stdev / om11st[i] * 100.0;
+
+        means[i] *= M_PI * RO * RO * 1e20;
+
+        printf("Cycle %2d: %2.1f\tMean: %2.1f\tStd. Dev.: %2.1f%%\n", i + 1, om11st[i] * M_PI * RO * RO * 1e20, means[i], pcdev);
+
+        double THRESH1 = 0.05;
+        double THRESH2 = 0.2;
+        if ((i >= 10) &&
+            (std::fabs(means[i]     - means[i - 1]) <= THRESH1) &&
+            (std::fabs(means[i - 1] - means[i - 2]) <= THRESH1) &&
+            (std::fabs(means[i - 2] - means[i - 3]) <= THRESH1) &&
+            (std::fabs(means[i - 3] - means[i - 4]) <= THRESH1) &&
+            (std::fabs(means[i - 4] - means[i - 5]) <= THRESH1) &&
+            (std::fabs(means[i - 5] - means[i - 6]) <= THRESH1) &&
+            (std::fabs(means[i - 6] - means[i - 7]) <= THRESH1) &&
+            (std::fabs(means[i - 7] - means[i - 8]) <= THRESH1) &&
+            (std::fabs(means[i - 8] - means[i - 9]) <= THRESH1) &&
+            (std::fabs(means[i - 9] - means[i - 10]) <= THRESH1)) {
+            double min = 1e20, max = 0.0;
+            for (int j = 0; j <= 5; j++) {
+                if (means[i - j] < min) {
+                    min = means[i - j];
+                }
+                if (means[i - j] > max) {
+                    max = means[i - j];
+                }
+            }
+            if (max - min < THRESH2) {
+                break;
+            }
+        }
+
+        i += 1;
     }
 
-    double sum = 0.0;
-    for (int i = 0; i < ITN; i++) {
-        sum += om11st[i] * M_PI * RO * RO * 1e20;
-    }
-    sum /= (double)ITN;
-    printf("Average CCS: %f\n", sum);
+    printf("Average CCS: %f\n", means[i]);
 }
 
 void mobil2(Molecule molecule)
